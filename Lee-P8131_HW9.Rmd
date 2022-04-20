@@ -5,37 +5,58 @@ date: "4/20/2022"
 output: pdf_document
 ---
 
-Load packages
+Set output parameters
+```{r}
+knitr::opts_chunk$set(
+  fig.width = 6, fig.asp = .6, out.width = "90%"
+)
+```
+
+Load package and data
 ```{r}
 library(survival)
+data("tongue", package = "KMsurv")  # type 1 = Aneuploid Tumor, type 2 = Diploid Tumor
 ```
 
-Load data
-```{r}
-data("tongue", package = "KMsurv")
-# type 1 = Aneuploid Tumor, type 2 = Diploid Tumor
-```
-
-```{r}
+```{r, eval=F}
+# the follow code shows the right censored data
 Surv(tongue$time, tongue$delta, type='right') # 0: censored, 1: observed death
 ```
 
+Fit and plot a KM curve for the aneuploid tumor data
 ```{r}
 km_an = survfit(Surv(time, delta) ~ 1, data = subset(tongue, type == 1), conf.type='log')
 plot(km_an, mark.time = TRUE,
      xlab = "Months", ylab = "Survival Probability", main = "Aneuploid Tumor Survival Function KM curve", 
      cex.lab = 1.2, cex.main = 1.2)
+```
 
+Obtain the survival rate at the 1 year mark with 95% CI
+```{r}
+# time = 52 (52 weeks in a year); n.event: the cumulative number of deaths at the time point
+surv_an = round(summary(km_an, time = 52)$surv, 3)
+lcl_an = round(summary(km_an, time = 52)$lower, 3)
+ucl_an = round(summary(km_an, time = 52)$upper, 3)
+stat_an = rbind(c(surv_an, lcl_an, ucl_an))
+colnames(stat_an) = c("Survival Rate", "CI Lower", "CI Upper")
+knitr::kable(stat_an, "simple")
+```
+
+Fit and plot a KM curve for the diploid tumor data
+```{r}
 km_di = survfit(Surv(time, delta) ~ 1, data = subset(tongue, type == 2), conf.type='log')
 plot(km_di, mark.time = TRUE,
      xlab = "Months", ylab = "Survival Probability", main = "Diploid Tumor Survival Function KM curve", 
      cex.lab = 1.2, cex.main = 1.2)
 ```
 
-Obtain survival rate at the 1 year mark with 95% CI
+Obtain the survival rate at the 1 year mark with 95% CI
 ```{r}
-summary(km_an, time = 52) 
-# time = 52 (52 weeks in a year); n.event: the cumulative number of deaths at the time point
-summary(km_di, time = 52) 
+surv_di = round(summary(km_di, time = 52)$surv, 3)
+lcl_di = round(summary(km_di, time = 52)$lower, 3)
+ucl_di = round(summary(km_di, time = 52)$upper, 3)
+stat_di = rbind(c(surv_di, lcl_di, ucl_di))
+colnames(stat_di) = c("Survival Rate", "CI Lower", "CI Upper")
+knitr::kable(stat_di, "simple")
 ```
 
