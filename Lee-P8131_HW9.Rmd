@@ -4,3 +4,38 @@ author: "Brian Jo Hsuan Lee"
 date: "4/20/2022"
 output: pdf_document
 ---
+
+Load packages
+```{r}
+library(survival)
+```
+
+Load data
+```{r}
+data("tongue", package = "KMsurv")
+# type 1 = Aneuploid Tumor, type 2 = Diploid Tumor
+```
+
+```{r}
+Surv(tongue$time, tongue$delta, type='right') # 0: censored, 1: observed death
+```
+
+```{r}
+km_an = survfit(Surv(time, delta) ~ 1, data = subset(tongue, type == 1), conf.type='log')
+plot(km_an, mark.time = TRUE,
+     xlab = "Months", ylab = "Survival Probability", main = "Aneuploid Tumor Survival Function KM curve", 
+     cex.lab = 1.2, cex.main = 1.2)
+
+km_di = survfit(Surv(time, delta) ~ 1, data = subset(tongue, type == 2), conf.type='log')
+plot(km_di, mark.time = TRUE,
+     xlab = "Months", ylab = "Survival Probability", main = "Diploid Tumor Survival Function KM curve", 
+     cex.lab = 1.2, cex.main = 1.2)
+```
+
+Obtain survival rate at the 1 year mark with 95% CI
+```{r}
+summary(km_an, time = 52) 
+# time = 52 (52 weeks in a year); n.event: the cumulative number of deaths at the time point
+summary(km_di, time = 52) 
+```
+
